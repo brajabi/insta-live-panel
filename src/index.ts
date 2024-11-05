@@ -164,7 +164,7 @@ const app = new Elysia()
       };
     }
   })
-  .get("/admin", () => {
+  .get("/", () => {
     return `<!DOCTYPE html>
       <html dir="rtl">
         <head>
