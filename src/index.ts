@@ -166,9 +166,9 @@ const app = new Elysia()
   })
   .get("/admin", () => {
     return `<!DOCTYPE html>
-      <html>
+      <html dir="rtl">
         <head>
-          <title>Stream Control Panel</title>
+          <title>پنل کنترل استریم</title>
           <style>
             body { 
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -229,39 +229,43 @@ const app = new Elysia()
               border-radius: 4px;
               box-sizing: border-box;
             }
+            .ltr {
+              direction: ltr;
+            }
           </style>
         </head>
         <body>
-          <h1>Stream Control Panel</h1>
+          <h1>پنل کنترل استریم</h1>
           
           <div class="stream-controls">
-            <h2>Start New Stream</h2>
+            <h2>شروع استریم جدید</h2>
             <form id="startForm" onsubmit="return false;">
               <div class="form-group">
-                <label for="fromStream">Input Stream URL:</label>
-                <select id="fromStream" required>
-                  <option value="">Loading streams...</option>
+                <label for="fromStream">آدرس استریم ورودی:</label>
+                <select id="fromStream" required class="ltr">
+                  <option value="">در حال بارگذاری استریم‌ها...</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="toStream">Output Stream URL:</label>
-                <input type="text" id="toStream" placeholder="rtmp://localhost/live/cam2" value="rtmp://localhost/live/cam2" required>
+                <label for="toStream">آدرس استریم خروجی:</label>
+                <input type="text" id="toStream" placeholder="rtmp://localhost/live/cam2" value="rtmp://localhost/live/cam2" required class="ltr">
               </div>
               <div class="form-group">
-                <label for="title">Stream Title:</label>
-                <input type="text" id="title" placeholder="Instagram Live 1" value="Instagram Live 1" required>
+                <label for="title">عنوان استریم:</label>
+                <input type="text" id="title" placeholder="لایو اینستاگرام ۱" value="لایو اینستاگرام ۱" required>
               </div>
-              <div class="form-group">
-                <label>
-                  <input type="checkbox" id="rotate"> Rotate Video 90° Clockwise
+              <div style="display: flex; align-items: center; width: 500px;">
+                <label style="display: flex; align-items: center; justify-content: flex-start; width: 500px;">
+                  چرخش ویدیو ۹۰ درجه در جهت عقربه‌های ساعت:
+                 <input type="checkbox" id="rotate"> 
                 </label>
               </div>
-              <button onclick="startStream()">Start Stream</button>
+              <button onclick="startStream()">شروع استریم</button>
             </form>
           </div>
 
           <div id="activeStreams">
-            <h2>Active Streams</h2>
+            <h2>استریم‌های فعال</h2>
             <div id="streamsList"></div>
           </div>
 
@@ -323,11 +327,11 @@ const app = new Elysia()
                 data.processes.map(process => \`
                   <div class="stream-controls">
                     <strong>\${process.title}</strong><br>
-                    <small>Process ID: \${process.id}</small>
-                    <button class="stop-btn" onclick="stopStream('\${process.id}')">Stop Stream</button>
+                    <small>شناسه فرآیند: \${process.id}</small>
+                    <button class="stop-btn" onclick="stopStream('\${process.id}')">توقف استریم</button>
                   </div>
                 \`).join('') :
-                '<p>No active streams</p>';
+                '<p>هیچ استریم فعالی وجود ندارد</p>';
             }
 
             // Initial load of streams and active streams
