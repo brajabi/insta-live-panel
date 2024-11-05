@@ -6,46 +6,62 @@ const activeProcesses: Map<string, any> = new Map();
 
 const app = new Elysia()
   .use(html())
-  .get(
+  .post(
     "/start-ffmpeg",
-    async ({ query }) => {
+    async ({ body }) => {
       try {
-        const { fromStream, title, toStream } = query as {
-          fromStream: string;
-          title: string;
-          toStream: string;
-        };
+        const { fromStream, title, toStream, rotate } = body;
         const processId = Math.random().toString(36).substring(7);
 
         console.log(
           `Stream ${title} started with process id ${processId} from ${fromStream} to ${toStream}`
         );
 
-        const ffmpegProcess = Bun.spawn([
-          "ffmpeg",
-          "-i",
-          fromStream,
-          "-c:v",
-          "libx264",
-          "-preset",
-          "veryfast",
-          "-b:v",
-          "2500k",
-          "-c:a",
-          "aac",
-          "-b:a",
-          "128k",
-          "-vf",
-          "transpose=1",
-          "-f",
-          "flv",
-          "-flvflags",
-          "no_duration_filesize",
-          toStream,
-        ]);
+        if (rotate) {
+          const ffmpegProcess = Bun.spawn(
+            [
+              "ffmpeg",
+              "-i",
+              fromStream,
+              "-c:v",
+              "libx264",
+              "-preset",
+              "veryfast",
+              "-b:v",
+              "2500k",
+              "-c:a",
+              "aac",
+              "-b:a",
+              "128k",
+              "-vf",
+              "transpose=1",
+              "-f",
+              "flv",
+              "-flvflags",
+              "no_duration_filesize",
+              toStream,
+            ],
+            {
+              stdout: "ignore",
+              stderr: "ignore",
+            }
+          );
 
-        // Store the process with its ID and title
-        activeProcesses.set(processId, { process: ffmpegProcess, title });
+          // Store the process with its ID and title
+          activeProcesses.set(processId, { process: ffmpegProcess, title });
+        } else {
+          // do ffmpeg -i rtmp://localhost/live/cam1 -c copy -f flv rtmp://destination-server/app/stream-key
+          const ffmpegProcess = Bun.spawn(
+            ["ffmpeg", "-i", fromStream, "-c", "copy", "-f", "flv", toStream],
+            {
+              stdout: "ignore",
+              stderr: "ignore",
+            }
+          );
+
+          // Store the process with its ID and title
+          activeProcesses.set(processId, { process: ffmpegProcess, title });
+        }
 
         return {
           success: true,
@@ -61,10 +77,11 @@ const app = new Elysia()
       }
     },
     {
-      query: t.Object({
+      body: t.Object({
         fromStream: t.String(),
         title: t.String(),
         toStream: t.String(),
+        rotate: t.Optional(t.Boolean()),
       }),
     }
   )
@@ -234,6 +251,11 @@ const app = new Elysia()
                 <label for="title">Stream Title:</label>
                 <input type="text" id="title" placeholder="Instagram Live 1" value="Instagram Live 1" required>
               </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="rotate"> Rotate Video 90° Clockwise
+                </label>
+              </div>
               <button onclick="startStream()">Start Stream</button>
             </form>
           </div>
@@ -264,7 +286,19 @@ const app = new Elysia()
               const fromStream = document.getElementById('fromStream').value;
               const toStream = document.getElementById('toStream').value;
               const title = document.getElementById('title').value;
-              const response = await fetch(\`/start-ffmpeg?fromStream=\${encodeURIComponent(fromStream)}&toStream=\${encodeURIComponent(toStream)}&title=\${encodeURIComponent(title)}\`);
+              const rotate = document.getElementById('rotate').checked;
+              const response = await fetch('/start-ffmpeg', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  fromStream,
+                  toStream,
+                  title,
+                  rotate
+                })
+              });
               const data = await response.json();
               if (data.success) {
                 document.getElementById('startForm').reset();
