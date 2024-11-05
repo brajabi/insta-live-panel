@@ -9,12 +9,16 @@ A simple yet powerful web-based control panel for managing Instagram live stream
 - 🎮 Easy-to-use control panel
 - ⚡ Fast performance with Bun runtime
 - 🛠️ FFmpeg integration for reliable stream processing
+- 🔄 Support for multiple simultaneous streams
+- 🎬 Video rotation support (90° clockwise)
+- 📊 Stream status monitoring with video details (resolution, FPS, codec)
+- 🎯 RTMP server included with node-media-server
 
 ## Prerequisites
 
 - [Bun](https://bun.sh) installed on your system
 - FFmpeg installed and available in your system PATH
-- RTMP server (like nginx-rtmp) for stream handling
+- Node.js and npm (for node-media-server)
 
 ## Installation
 
@@ -39,19 +43,28 @@ bun install
 bun run dev
 ```
 
-2. Open `http://localhost:3000/admin` in your browser to access the control panel
+2. Open `http://localhost:3000` in your browser to access the control panel
 
 3. Configure your streams:
-   - Input Stream URL: Your RTMP source stream URL
-   - Output Stream URL: Your destination RTMP URL
-   - Stream Title: A name to identify your stream
+   - Select an input stream from the available RTMP sources
+   - Set your output RTMP URL
+   - Add a stream title for identification
+   - Optionally enable 90° rotation for vertical video
 
 ## API Endpoints
 
-- `GET /admin` - Web-based control panel interface
-- `GET /start-ffmpeg` - Start a new FFmpeg stream process
+- `GET /` - Web-based control panel interface
+- `POST /start-ffmpeg` - Start a new FFmpeg stream process
 - `GET /stop-ffmpeg` - Stop an active stream process
 - `GET /active-processes` - List all currently active streams
+- `GET /streams` - List available input RTMP streams
+
+## RTMP Server
+
+The application includes a built-in RTMP server running on:
+
+- RTMP: port 1935 (for stream ingestion)
+- HTTP: port 8000 (for API and monitoring)
 
 ## Development
 
