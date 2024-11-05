@@ -115,6 +115,38 @@ const app = new Elysia()
       })),
     };
   })
+  .get("/streams", async () => {
+    try {
+      const streams = await fetch("http://localhost:8000/api/streams");
+      const data = (await streams.json()) as any;
+
+      // Extract RTMP streams from the nested structure
+      const rtmpStreams = [];
+      if (data.live) {
+        for (const inputStream of Object.entries(data.live)) {
+          const app = inputStream[0] as string;
+          const streamInfo = inputStream[1] as any;
+
+          rtmpStreams.push({
+            name: app,
+            url: `rtmp://localhost/live/${app}`,
+            videoSize: `${streamInfo.publisher.video.width}x${streamInfo.publisher.video.height}`,
+            fps: streamInfo.publisher.video.fps,
+            codec: streamInfo.publisher.video.codec,
+          });
+        }
+      }
+
+      return {
+        streams: rtmpStreams,
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        streams: [],
+      };
+    }
+  })
   .get("/admin", () => {
     return `<!DOCTYPE html>
       <html>
@@ -172,6 +204,14 @@ const app = new Elysia()
             h1, h2 {
               color: #2c3e50;
             }
+            select {
+              width: 100%;
+              padding: 0.5rem;
+              margin: 0.5rem 0;
+              border: 1px solid #ddd;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
           </style>
         </head>
         <body>
@@ -182,7 +222,9 @@ const app = new Elysia()
             <form id="startForm" onsubmit="return false;">
               <div class="form-group">
                 <label for="fromStream">Input Stream URL:</label>
-                <input type="text" id="fromStream" placeholder="rtmp://localhost/live/cam" value="rtmp://localhost/live/cam" required>
+                <select id="fromStream" required>
+                  <option value="">Loading streams...</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="toStream">Output Stream URL:</label>
@@ -202,6 +244,22 @@ const app = new Elysia()
           </div>
 
           <script>
+            async function loadStreams() {
+              try {
+                const response = await fetch('/streams');
+                const data = await response.json();
+                console.log(data);
+                const select = document.getElementById('fromStream');
+                select.innerHTML = data.streams.map(stream => 
+                  \`<option value="\${stream.url}">\${stream.name} - \${stream.videoSize} - \${stream.fps}fps - \${stream.codec}</option>\`
+                ).join('');
+              } catch (error) {
+                console.error('Failed to load streams:', error);
+                const select = document.getElementById('fromStream');
+                select.innerHTML = '<option value="">Failed to load streams</option>';
+              }
+            }
+
             async function startStream() {
               const fromStream = document.getElementById('fromStream').value;
               const toStream = document.getElementById('toStream').value;
@@ -238,10 +296,15 @@ const app = new Elysia()
                 '<p>No active streams</p>';
             }
 
-            // Initial load of streams
+            // Initial load of streams and active streams
+            loadStreams();
             updateStreamsList();
-            // Update every 5 seconds
-            setInterval(updateStreamsList, 5000);
+            
+            // Update both streams and active streams every 5 seconds
+            setInterval(() => {
+              loadStreams();
+              updateStreamsList();
+            }, 5000);
           </script>
         </body>
       </html>
@@ -252,3 +315,23 @@ const app = new Elysia()
 console.log(
   `Hoshi 🤓 Server is running on: http://${app.server?.hostname}:${app.server?.port}`
 );
+
+import NodeMediaServer from "node-media-server";
+
+const config = {
+  rtmp: {
+    port: 1935,
+    chunk_size: 60000,
+    gop_cache: true,
+    ping: 30,
+    ping_timeout: 60,
+  },
+  http: {
+    port: 8000,
+    allow_origin: "*",
+    mediaroot: "./media",
+  },
+};
+
+var nms = new NodeMediaServer(config);
+nms.run();

@@ -18,11 +18,13 @@
     "@google-cloud/vertexai": "^1.8.1",
     "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^5.20.0",
+    "@types/node-media-server": "^2.3.7",
     "cuid": "^3.0.0",
     "elysia": "latest",
     "file-type": "^19.6.0",
     "google-auth-library": "^9.14.1",
     "nanoid": "^5.0.7",
+    "node-media-server": "^2.7.0",
     "openai": "^4.67.1",
     "sharp": "^0.33.5"
   },
