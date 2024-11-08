@@ -20,7 +20,7 @@ const app = new Elysia()
         if (rotate) {
           const ffmpegProcess = Bun.spawn(
             [
-              "ffmpeg",
+              "/usr/local/bin/ffmpeg",
               "-i",
               fromStream,
               "-c:v",
@@ -53,7 +53,16 @@ const app = new Elysia()
         } else {
           // do ffmpeg -i rtmp://localhost/live/cam1 -c copy -f flv rtmp://destination-server/app/stream-key
           const ffmpegProcess = Bun.spawn(
-            ["ffmpeg", "-i", fromStream, "-c", "copy", "-f", "flv", toStream],
+            [
+              "/usr/local/bin/ffmpeg",
+              "-i",
+              fromStream,
+              "-c",
+              "copy",
+              "-f",
+              "flv",
+              toStream,
+            ],
             {
               stdout: "ignore",
               stderr: "ignore",
