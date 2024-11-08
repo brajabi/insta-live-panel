@@ -4,9 +4,6 @@ import html from "@elysiajs/html";
 // Store active FFmpeg processes
 const activeProcesses: Map<string, any> = new Map();
 
-// Add this constant at the top of the file, after the imports
-const FFMPEG_PATH = "/usr/bin/ffmpeg"; // Adjust this path based on your system
-
 const app = new Elysia()
   .use(html())
   .post(
@@ -23,7 +20,7 @@ const app = new Elysia()
         if (rotate) {
           const ffmpegProcess = Bun.spawn(
             [
-              FFMPEG_PATH, // Use the path constant instead of "ffmpeg"
+              "ffmpeg",
               "-i",
               fromStream,
               "-c:v",
@@ -47,6 +44,7 @@ const app = new Elysia()
             {
               stdout: "ignore",
               stderr: "ignore",
+              cwd: "/usr/local/bin/ffmpeg",
             }
           );
 
@@ -55,19 +53,11 @@ const app = new Elysia()
         } else {
           // do ffmpeg -i rtmp://localhost/live/cam1 -c copy -f flv rtmp://destination-server/app/stream-key
           const ffmpegProcess = Bun.spawn(
-            [
-              FFMPEG_PATH,
-              "-i",
-              fromStream,
-              "-c",
-              "copy",
-              "-f",
-              "flv",
-              toStream,
-            ], // Use the path constant
+            ["ffmpeg", "-i", fromStream, "-c", "copy", "-f", "flv", toStream],
             {
               stdout: "ignore",
               stderr: "ignore",
+              cwd: "/usr/local/bin/ffmpeg",
             }
           );
 
