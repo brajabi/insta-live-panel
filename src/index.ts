@@ -20,7 +20,7 @@ const app = new Elysia()
         if (rotate) {
           const ffmpegProcess = Bun.spawn(
             [
-              "/usr/local/bin/ffmpeg",
+              "ffmpeg",
               "-i",
               fromStream,
               "-c:v",
