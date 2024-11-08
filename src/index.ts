@@ -44,6 +44,7 @@ const app = new Elysia()
             {
               stdout: "ignore",
               stderr: "ignore",
+              cwd: "/usr/local/bin/ffmpeg",
             }
           );
 
