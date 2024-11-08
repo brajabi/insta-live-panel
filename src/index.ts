@@ -44,7 +44,7 @@ const app = new Elysia()
             {
               stdout: "ignore",
               stderr: "ignore",
-              cwd: "/usr/local/bin/ffmpeg",
+              cwd: process.cwd(),
             }
           );
 
@@ -57,7 +57,7 @@ const app = new Elysia()
             {
               stdout: "ignore",
               stderr: "ignore",
-              cwd: "/usr/local/bin/ffmpeg",
+              cwd: process.cwd(),
             }
           );
 
