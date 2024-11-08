@@ -151,17 +151,21 @@ const app = new Elysia()
       // Extract RTMP streams from the nested structure
       const rtmpStreams = [];
       if (data.live) {
-        for (const inputStream of Object.entries(data.live)) {
-          const app = inputStream[0] as string;
-          const streamInfo = inputStream[1] as any;
+        try {
+          for (const inputStream of Object.entries(data.live)) {
+            const app = inputStream[0] as string;
+            const streamInfo = inputStream[1] as any;
 
-          rtmpStreams.push({
-            name: app,
-            url: `rtmp://localhost/live/${app}`,
-            videoSize: `${streamInfo.publisher.video.width}x${streamInfo.publisher.video.height}`,
-            fps: streamInfo.publisher.video.fps,
-            codec: streamInfo.publisher.video.codec,
-          });
+            rtmpStreams.push({
+              name: app,
+              url: `rtmp://localhost/live/${app}`,
+              videoSize: `${streamInfo.publisher?.video?.width}x${streamInfo.publisher?.video?.height}`,
+              fps: streamInfo.publisher?.video?.fps,
+              codec: streamInfo.publisher?.video?.codec,
+            });
+          }
+        } catch (error) {
+          console.error("Error processing stream data:", error);
         }
       }
 
@@ -169,7 +173,7 @@ const app = new Elysia()
         streams: rtmpStreams,
       };
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching streams:", error);
       return {
         streams: [],
       };
@@ -382,5 +386,10 @@ const config = {
   },
 };
 
-var nms = new NodeMediaServer(config);
-nms.run();
+// Add try-catch for server initialization
+try {
+  var nms = new NodeMediaServer(config);
+  nms.run();
+} catch (error) {
+  console.error("Failed to start media server:", error);
+}
